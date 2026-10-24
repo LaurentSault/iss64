@@ -5,7 +5,7 @@ A native PC port of **International Superstar Soccer 64** (N64, USA), built by s
 **This repository contains no game code or data.** You supply your own ROM, and everything is generated from it locally.
 
 ## Status
-Early. Everything is in place to build a PC executable, but it hasn't booted the game yet.
+Early. On Linux it boots through the Konami logo and the intro to the title screen, and keyboard input reaches the main menu. Known issue: the main menu buttons render without their labels. Nothing past the main menu has been tested yet.
 - The whole game's MIPS code recompiles to C: 5,654 functions across main and 15 code overlays.
 - 234 libultra functions are identified, so the runtime can swap in its own versions.
 - The audio microcode (aspMain) is recompiled too.
@@ -38,7 +38,7 @@ On Windows, run the same steps from Git Bash inside a "x64 Native Tools" prompt,
 - `docs/rom-notes.md`: reverse-engineering notes
 
 ## Roadmap
-1. Boot to the title screen and fix whatever breaks on the way
+1. Fix the missing main menu labels, then get through the menus into a match
 2. Controller Pak saves (osPfsReSizeFile is stubbed for now)
 3. Full match playable
 4. PC extras (widescreen, 60fps, remapping)
