@@ -1,0 +1,8 @@
+[input]
+entrypoint = 0x80000400
+symbols_file_path = "build/iss64.syms.toml"
+rom_file_path = "baserom.us.z64"
+output_func_path = "build/RecompiledFuncs"
+
+[patches]
+ignored = ["func_80080C70","func_80080C8C","func_80081980","func_80083ED0","func_80084030","func_800840E0","func_80084BC0","func_80088060","func_800885A4","func_800887E4","func_800889B0","func_8008B300","func_800902A0","func_80090430"]

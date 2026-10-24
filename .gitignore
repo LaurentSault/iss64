@@ -1,0 +1,11 @@
+# Never commit game data
+*.z64
+*.n64
+*.v64
+baserom*
+
+# Generated
+build/
+venv/
+tools/N64Recomp/
+__pycache__/
