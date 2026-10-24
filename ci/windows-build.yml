@@ -1,0 +1,71 @@
+# Builds ISS64Recompiled.exe on a GitHub-hosted Windows machine.
+#
+# Use it from a PRIVATE repository that holds your own ROM, never from a public
+# one: the ROM and the recompiled game code must not be published.
+#   1. Create a private repo and add your ROM to it as rom/baserom.us.z64.
+#   2. Copy this file to .github/workflows/windows-build.yml in that repo.
+#   3. Run it from the Actions tab, then download the ISS64Recompiled-windows artifact.
+name: Windows build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Check out this repo (ROM)
+        uses: actions/checkout@v4
+        with:
+          path: private
+
+      - name: Check out the port
+        uses: actions/checkout@v4
+        with:
+          repository: LaurentSault/iss64
+          path: iss64
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up the MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install Ninja
+        run: choco install ninja -y --no-progress
+
+      - name: Fetch dependencies and recompile the ROM
+        working-directory: iss64
+        shell: bash
+        run: |
+          cp ../private/rom/baserom.us.z64 baserom.us.z64
+          tools/fetch_deps.sh
+          tools/recompile.sh
+
+      - name: Configure
+        working-directory: iss64
+        run: cmake -S . -B build/cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+
+      - name: Build
+        working-directory: iss64
+        run: cmake --build build/cmake
+
+      - name: Package
+        working-directory: iss64
+        shell: bash
+        run: |
+          mkdir -p package/ISS64Recompiled
+          cp build/cmake/ISS64Recompiled.exe build/cmake/*.dll package/ISS64Recompiled/
+          cp -r build/cmake/assets package/ISS64Recompiled/
+          cp README.md package/ISS64Recompiled/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ISS64Recompiled-windows
+          path: iss64/package
+          retention-days: 7

@@ -101,6 +101,9 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64
     # The RSP vector unit code needs SSE4.1.
     if (MSVC AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(ISS64Recompiled PRIVATE /arch:AVX)
+    elseif (MSVC)
+        # clang-cl takes GCC-style flags through /clang:.
+        target_compile_options(ISS64Recompiled PRIVATE /clang:-march=nehalem /clang:-fno-strict-aliasing)
     else()
         target_compile_options(ISS64Recompiled PRIVATE -march=nehalem -fno-strict-aliasing)
     endif()
