@@ -27,7 +27,21 @@ cmake --build build/cmake
 ```
 Run `build/cmake/ISS64Recompiled` and choose your ROM in the launcher. Or set `ISS64_ROM=/path/to/rom` to skip the launcher.
 
-On Windows, run the same steps from Git Bash inside a "x64 Native Tools" prompt, and use `-DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl`.
+### Windows
+Untested so far. You need:
+- Visual Studio 2022 (Community is fine) with "Desktop development with C++" and "C++ Clang tools for Windows". This also installs CMake and Ninja.
+- Git for Windows and Python 3 (tick "Add python.exe to PATH" in its installer).
+
+Open "x64 Native Tools Command Prompt for VS 2022" from the Start menu, then:
+```bat
+cd "C:\path\to\iss64"
+copy "C:\path\to\International Superstar Soccer 64 (U) [!].z64" baserom.us.z64
+"C:\Program Files\Git\bin\bash.exe" tools/fetch_deps.sh
+"C:\Program Files\Git\bin\bash.exe" tools/recompile.sh
+cmake -S . -B build\cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl
+cmake --build build\cmake
+build\cmake\ISS64Recompiled.exe
+```
 
 ## Layout
 - `config/overlays.md`: the game's overlay table, recovered from its DMA loader `func_8001B1B4`
