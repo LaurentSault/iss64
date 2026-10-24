@@ -3,6 +3,23 @@ entrypoint = 0x80000400
 symbols_file_path = "build/iss64.syms.toml"
 rom_file_path = "baserom.us.z64"
 output_func_path = "build/RecompiledFuncs"
+recomp_include = "#include \"recomp.h\"\n#ifdef __cplusplus\nextern \"C\"\n#endif\nvoid iss64_overlay_loaded(uint32_t rom, uint32_t vram, uint32_t size);"
+
 
 [patches]
-ignored = ["func_80080C70","func_80080C8C","func_80081980","func_80083ED0","func_80084030","func_800840E0","func_80084BC0","func_80088060","func_800885A4","func_800887E4","func_800889B0","func_8008B300","func_800902A0","func_80090430"]
+# libultra internals that are only reachable from functions the runtime replaces,
+# plus osPfsReSizeFile, which src/libultra_stubs.cpp provides.
+ignored = [
+    "osPfsReSizeFile", "__osPfsDeclearPage", "__osPfsReleasePages", "__osBlockSum",
+    "__osGetId_dup", "__osSumcalc", "__osIdCheckSum", "__osGetActiveQueue",
+    "func_80083DDC", "func_80084800", "func_80085838", "func_800869D0",
+    "func_8008DA2C", "func_8008E804", "func_8008F104", "func_8008F1EC",
+]
+
+# The game loads every overlay through func_8001B1B4(rom, vram, size). After its
+# DMA completes, tell the runtime which code is now in RAM. The original
+# arguments are still in the caller's spill slots at this point.
+[[patches.hook]]
+func = "func_8001B1B4"
+before_vram = 0x8001B238
+text = "    iss64_overlay_loaded(MEM_W(0x28, ctx->r29), MEM_W(0x2C, ctx->r29), MEM_W(0x30, ctx->r29));"

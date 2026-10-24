@@ -1,8 +1,13 @@
-"""Find functions in each code segment with spimdisasm and write an N64Recomp symbol file."""
+"""Find functions in each code segment with spimdisasm and write an N64Recomp symbol file.
+
+Usage: gen_syms.py ROM OVERLAY_TABLE NAMES OUT
+"""
 import re, struct, subprocess, sys, os, tempfile
-rom_path, ov_table, out = sys.argv[1], sys.argv[2], sys.argv[3]
+rom_path, ov_table, names_path, out = sys.argv[1:5]
+names = {int(a, 16): n for n, a in re.findall(r"^(\w+) = 0x([0-9A-Fa-f]+);", open(names_path).read(), re.M)}
 rom = open(rom_path, 'rb').read()
-segs = [("entry_main", 0x1000, 0x91260, 0x80000400)]
+# Main text ends where rspboot begins (0x80090430); the rest of main is data and microcode.
+segs = [("entry_main", 0x1000, 0x91030, 0x80000400)]
 for line in open(ov_table):
     m = re.match(r"\| 0x([0-9A-F]+) \| 0x([0-9A-F]+) \| 0x([0-9A-F]+) \| 0x[0-9A-F]+ \| (\d+)", line)
     if m:
@@ -27,10 +32,12 @@ for name, r0, r1, v in segs:
         text = "".join(open(os.path.join(dp, f)).read() for dp, _, fs in os.walk(d) for f in fs)
     starts = sorted({int(x, 16) for x in re.findall(r"glabel func_([0-9A-F]{8})", text)} |
                     {int(x, 16) for x in re.findall(r"glabel \w+\s*\n.*?/\* [0-9A-F]+ ([0-9A-F]{8})", text)})
+    # Named symbols are known function starts even when spimdisasm merges them (e.g. tiny leaf functions like sqrtf).
+    starts = sorted(set(starts) | set(names))
     starts = [s for s in starts if v <= s < v + (te - r0)]
     lines.append(f'[[section]]\nname = "{name}"\nrom = 0x{r0:08X}\nvram = 0x{v:08X}\nsize = 0x{te-r0:X}\n\nfunctions = [')
     for a, b in zip(starts, starts[1:] + [v + te - r0]):
-        lines.append(f'    {{ name = "func_{a:08X}", vram = 0x{a:08X}, size = 0x{b-a:X} }},')
+        lines.append(f'    {{ name = "{names.get(a, f'func_{a:08X}')}", vram = 0x{a:08X}, size = 0x{b-a:X} }},')
     lines.append(']\n')
     print(name, hex(r0), hex(te), hex(v), len(starts), "funcs", file=sys.stderr)
 open(out, 'w').write("\n".join(lines))

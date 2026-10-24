@@ -7,5 +7,5 @@ baserom*
 # Generated
 build/
 venv/
-tools/N64Recomp/
 __pycache__/
+lib/

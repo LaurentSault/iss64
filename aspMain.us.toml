@@ -1,0 +1,9 @@
+# Audio microcode (aspMain) for RSPRecomp. Text is in main at 0x80092D00 (ROM 0x93900).
+# The game passes ucode_data 0x800DC5D0; its command table at data+0x10 gives the indirect branch targets.
+text_offset = 0x93900
+text_size = 0xE20
+text_address = 0x04001080
+rom_file_path = "baserom.us.z64"
+output_file_path = "build/rsp/aspMain.cpp"
+output_function_name = "aspMain"
+extra_indirect_branch_targets = [ 0x1118, 0x1470, 0x11DC, 0x1B38, 0x1214, 0x187C, 0x1254, 0x12D0, 0x12EC, 0x1328, 0x140C, 0x1294, 0x1E24, 0x138C, 0x170C, 0x144C ]
