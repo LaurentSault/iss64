@@ -179,7 +179,8 @@ int main(int argc, char** argv) {
     recompinput::playerassignment::add_keyboard_player();
     recompinput::playerassignment::commit_player_assignment();
 
-    recompui::register_primary_font("fonts/primary.ttf", "primary");
+    // The family must match the name stored inside the font file.
+    recompui::register_primary_font("fonts/primary.ttf", "Inter Variable");
     recompui::config::create_general_tab(recompui::config::GeneralTabOptions{});
     recompui::config::create_graphics_tab();
     recompui::config::create_sound_tab();
