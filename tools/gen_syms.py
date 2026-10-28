@@ -36,8 +36,11 @@ for name, r0, r1, v in segs:
     starts = sorted(set(starts) | set(names))
     starts = [s for s in starts if v <= s < v + (te - r0)]
     lines.append(f'[[section]]\nname = "{name}"\nrom = 0x{r0:08X}\nvram = 0x{v:08X}\nsize = 0x{te-r0:X}\n\nfunctions = [')
+    # Overlays that share RAM have functions at the same addresses. The recompiled
+    # functions are weak symbols, so equal names would silently link to one body.
+    suffix = "" if name == "entry_main" else f"_{r0:06X}"
     for a, b in zip(starts, starts[1:] + [v + te - r0]):
-        lines.append(f'    {{ name = "{names.get(a, f'func_{a:08X}')}", vram = 0x{a:08X}, size = 0x{b-a:X} }},')
+        lines.append(f'    {{ name = "{names.get(a, f'func_{a:08X}{suffix}')}", vram = 0x{a:08X}, size = 0x{b-a:X} }},')
     lines.append(']\n')
     print(name, hex(r0), hex(te), hex(v), len(starts), "funcs", file=sys.stderr)
 open(out, 'w').write("\n".join(lines))

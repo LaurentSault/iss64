@@ -81,8 +81,11 @@ void update_gfx(ultramodern::gfx_callbacks_t::gfx_data_t) {
 
 std::unique_ptr<ultramodern::renderer::RendererContext> create_render_context(
     uint8_t* rdram, ultramodern::renderer::WindowHandle window_handle, bool developer_mode) {
+    // ISS64 draws some frames with more than one display list (the main menu
+    // labels come in a later one), so present on VI like the console does.
+    // PresentEarly shows the frame after the first list and the labels flicker.
     return recompui::renderer::create_render_context(rdram, window_handle,
-        ultramodern::renderer::PresentationMode::PresentEarly, developer_mode);
+        ultramodern::renderer::PresentationMode::Console, developer_mode);
 }
 
 // Graphics tasks go straight to RT64; the only other RSP task the game sends is audio.
