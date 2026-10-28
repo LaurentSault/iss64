@@ -2,6 +2,7 @@
 // the game with librecomp, and hands control to the recompiled game code.
 #include <cstdint>
 #include <cstdio>
+#include <cctype>
 #include <cstdlib>
 #include <filesystem>
 #include <string>
@@ -189,6 +190,20 @@ int main(int argc, char** argv) {
     recompui::config::create_sound_tab();
     recompui::config::create_controls_tab();
     recompui::config::finalize();
+
+    // A ROM placed next to the exe is picked up automatically, so the launcher
+    // offers Start Game without needing the file dialog.
+    if (!recomp::is_rom_valid(game_id)) {
+        for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::current_path(), ec)) {
+            std::filesystem::path ext = entry.path().extension();
+            std::string ext_lower = ext.string();
+            for (char& c : ext_lower) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            if (entry.is_regular_file() && (ext_lower == ".z64" || ext_lower == ".n64" || ext_lower == ".v64") &&
+                recomp::select_rom(entry.path(), game_id) == recomp::RomValidationError::Good) {
+                break;
+            }
+        }
+    }
 
     // ISS64_ROM=/path/to/rom stores the ROM and boots straight into the game,
     // skipping the launcher. Useful for development.
